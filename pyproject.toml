@@ -17,10 +17,14 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "requests>=2.32.0",
     "streamlit>=1.40.0",
+    "ssb-statistikkbanken",
 ]
 
 [tool.uv]
 package = false
+
+[tool.uv.sources]
+ssb-statistikkbanken = { git = "https://github.com/Manteplante/ssb_statistikkbanken", branch = "main" }
 
 [tool.pytest.ini_options]
 testpaths = ["05_tests"]
