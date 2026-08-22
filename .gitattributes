@@ -1,0 +1,4 @@
+# Force LF line endings for the Makefile — a CRLF recipe line breaks GNU Make
+# (the trailing \r becomes part of the shell command), which matters here
+# since this repo is developed on WSL alongside Windows-side editors.
+Makefile text eol=lf

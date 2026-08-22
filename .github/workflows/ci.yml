@@ -1,0 +1,135 @@
+name: ci
+
+# Runs on every push to every branch, so bugs surface while you are still on the
+# branch rather than at merge time.
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A new push to the same branch cancels the run still in flight.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # GitHub labels the runs from the job name plus the matrix value, so these
+  # show up as "smoketest (csv)", "smoketest (parquet)", ...
+  smoketest:
+    runs-on: ubuntu-latest
+
+    # A hung notebook kernel would otherwise inherit GitHub's 6-hour default.
+    timeout-minutes: 10
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # Pushes run csv only — quick feedback, and almost no commit touches the
+        # format layer. Pull requests and manual runs cover all three before the
+        # change can reach main.
+        format: >-
+          ${{ github.event_name == 'push'
+              && fromJSON('["csv"]')
+              || fromJSON('["csv","parquet","xlsx"]') }}
+
+    env:
+      FILE_FORMAT: ${{ matrix.format }}
+
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      # Keyed on the lockfile, so the download cache is reused until deps change.
+      - name: Cache uv downloads
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/uv
+          key: uv-${{ runner.os }}-${{ hashFiles('uv.lock') }}
+          restore-keys: uv-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Install notebook kernel
+        run: make notebook-kernel
+
+      - name: Start report
+        run: |
+          {
+            echo "## 🧪 Smoke test — \`$FILE_FORMAT\`"
+            echo
+            echo "| Stage | Result |"
+            echo "| --- | --- |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # 1. With no data at all: every page must render its empty state rather
+      #    than crash. A checkout carries no data — 02_data/ is generated — so
+      #    this is exactly the state a fresh clone and a bucket-less deploy see.
+      - name: Pages render with no data
+        run: |
+          set -eo pipefail
+          make ci 2>&1 | tee /tmp/empty.log
+          echo "| Pages render, no data | ✅ $(grep -oE '[0-9]+ passed' /tmp/empty.log | tail -1) |" >> "$GITHUB_STEP_SUMMARY"
+
+      # 2. Then run the real ETL end to end. This is what `make ci` alone never
+      #    covered: a broken source, transform, or notebook is caught here.
+      - name: Run the pipeline
+        run: |
+          set -eo pipefail
+          make pipeline 2>&1 | tee /tmp/pipeline.log
+          echo "| Pipeline | ✅ $(grep -cE '^\[ingest\]' /tmp/pipeline.log) raw file(s) fetched |" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Check the pipeline produced tables
+        run: |
+          uv run python - <<'PY'
+          from backend import storage
+
+          # Deliberately name-agnostic: rename your tables freely, this still
+          # checks the pipeline produced something real.
+          tables = storage.tables()
+          assert tables, "the pipeline produced no tables at all"
+
+          rows = {name: len(storage.load(name)) for name in tables}
+          assert any(rows.values()), f"every table came out empty: {rows}"
+          print(f"tables: {rows}")
+          PY
+          echo "| Pipeline output | ✅ see the report below |" >> "$GITHUB_STEP_SUMMARY"
+
+      # 3. Pages must also render with real data in place, not just empty.
+      - name: Pages render with data
+        run: |
+          set -eo pipefail
+          make ci 2>&1 | tee /tmp/data.log
+          echo "| Pages render, with data | ✅ $(grep -oE '[0-9]+ passed' /tmp/data.log | tail -1) |" >> "$GITHUB_STEP_SUMMARY"
+
+      # What this pipeline actually is — sources, tables and their columns, and
+      # which table each page reads. Derived by inspection, so it describes the
+      # pipeline you built rather than the example one.
+      - name: Report what the pipeline built
+        run: |
+          {
+            echo
+            make report
+            echo
+            echo "All checks passed for \`$FILE_FORMAT\`. 🎉"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Report failure
+        if: failure()
+        run: |
+          {
+            echo
+            echo "> [!CAUTION]"
+            echo "> Failed on \`$FILE_FORMAT\`. Open the failing step above for the traceback."
+          } >> "$GITHUB_STEP_SUMMARY"

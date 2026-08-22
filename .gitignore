@@ -1,0 +1,24 @@
+# Local environment files (keep secrets and machine-specific paths out of git)
+.env
+.env.*
+!.env.example
+.venv/
+**/__pycache__/
+*.py[cod]
+
+# Credentials — never commit service-account keys or app secrets.
+# Every .json is ignored, because that is the shape a Google key arrives in
+# (cloud-key.json, my-project-abc123.json, ...). Add an explicit exception
+# below if you ever need a JSON file in the repo.
+*.json
+!.devcontainer/devcontainer.json
+
+secrets.toml
+!secrets.example.toml
+
+# Tooling caches
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Stray ZeroMQ sockets if a notebook kernel dies mid-run
+kernel-ipc-*

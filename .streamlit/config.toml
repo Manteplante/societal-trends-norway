@@ -1,0 +1,16 @@
+# Customize this theme block for your project — these are Streamlit's own defaults.
+[theme]
+primaryColor = "#FF4B4B"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F0F2F6"
+textColor = "#262730"
+font = "sans serif"
+
+[client]
+showErrorDetails = true
+
+[server]
+headless = true
+
+[logger]
+level = "info"

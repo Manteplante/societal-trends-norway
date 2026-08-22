@@ -1,0 +1,32 @@
+[project]
+name = "streamlit-google-storage-template"
+version = "0.1.0"
+description = "Template for a Streamlit app backed by a Google Cloud Storage-hosted medallion data pipeline"
+requires-python = ">=3.12"
+dependencies = [
+    "beautifulsoup4>=4.12.0",
+    "gcsfs>=2024.9.0",
+    "ipykernel>=6.29.0",
+    "jupyter>=1.1.0",
+    "matplotlib>=3.10.0",
+    "nbconvert>=7.16.0",
+    "openpyxl>=3.1.0",
+    "pandas>=2.2.0",
+    "pyarrow>=17.0.0",
+    "plotly>=5.24.0",
+    "python-dotenv>=1.0.0",
+    "requests>=2.32.0",
+    "streamlit>=1.40.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["05_tests"]
+pythonpath = ["."]   # so tests can `from backend import storage`
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.0",
+]
