@@ -28,7 +28,7 @@ def _dir(name: str, default: str) -> Path:
     return raw if raw.is_absolute() else (ROOT / raw).resolve()
 
 
-APP_NAME = _text("APP_NAME", "Streamlit + Google Cloud Storage Template")
+APP_NAME = _text("APP_NAME", "Testing ssb wrapper and streamlit deployment")
 APP_ICON = _text("APP_ICON", "📦")
 
 RAW_DIR = _dir("RAW_DIR", "02_data/raw")          # what ingestion writes
