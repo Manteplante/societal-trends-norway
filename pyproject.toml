@@ -1,7 +1,7 @@
 [project]
-name = "streamlit-google-storage-template"
+name = "samfunnspuls 2.0 battle-tested"
 version = "0.1.0"
-description = "Template for a Streamlit app backed by a Google Cloud Storage-hosted medallion data pipeline"
+description = "samfunnspuls 2.0 built with battle-tested streamlit and python ssb wrapper"
 requires-python = ">=3.12"
 dependencies = [
     "beautifulsoup4>=4.12.0",
