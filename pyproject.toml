@@ -1,5 +1,5 @@
 [project]
-name = "samfunnspuls 2.0 battle-tested"
+name = "samfunnspuls-2.0-battle-tested"
 version = "0.1.0"
 description = "samfunnspuls 2.0 built with battle-tested streamlit and python ssb wrapper"
 requires-python = ">=3.12"
