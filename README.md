@@ -655,7 +655,7 @@ Only `backend/config.py` reads the environment, and every value has a working
 default — an empty `.env` is valid, which is why there isn't one in the repo.
 CI runs `make ci`, so local and CI can't drift.
 
-Working in this repo with a coding agent? `AGENTS.md` documents the conventions,
+Working in this repo with a coding agent? `CLAUDE.md` documents the conventions,
 the wrapper's API in full, and the handful of things that look removable but are
 not.
 
