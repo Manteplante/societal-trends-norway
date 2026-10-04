@@ -41,7 +41,11 @@ landet_last = landet.loc[landet["year"] == last, "value"]
 left, right = st.columns(2)
 if not landet_last.empty:
     left.metric(f"Landet — {last}", f"{landet_last.iloc[0]:,.0f}")
-right.metric(f"Sum, {scope} — {last}", f"{shown.loc[shown['year'] == last, 'value'].sum():,.0f}")
+latest_values = shown.loc[shown["year"] == last, "value"]
+right.metric(
+    f"Sum, {scope} — {last}",
+    f"{latest_values.sum():,.0f}" if not latest_values.empty else "—",
+)
 
 # Largest first, by the latest year, so the ranking reads left to right.
 order = (
