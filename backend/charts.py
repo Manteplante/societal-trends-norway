@@ -125,6 +125,7 @@ def style(fig, *, area: bool = False, max_xticks: Optional[int] = None):
             hue = trace.fillcolor or trace.line.color
             trace.update(fillcolor=hue, line=dict(width=2, color=SURFACE))
     else:
-        fig.update_traces(line=dict(width=2), marker=dict(size=8))
+        # Line and scatter traces only — a bar has no `line` and would raise.
+        fig.update_traces(line=dict(width=2), marker=dict(size=8), selector=dict(type="scatter"))
 
     return fig
