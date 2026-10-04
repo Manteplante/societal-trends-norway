@@ -35,6 +35,26 @@ def select(df: pd.DataFrame) -> tuple[pd.DataFrame, str]:
     return df[level == "Fylke"], "alle fylker"
 
 
+def pick(df: pd.DataFrame) -> tuple[pd.DataFrame, str]:
+    """Sidebar Fylke and Kommune selectboxes → (one region's rows, its name).
+
+    For pages whose colour already carries the measures, so only one region
+    fits on the chart. Flows such as innflyttinger can't be summed across
+    regions either — a move between two picked kommuner would count in both.
+    """
+    level = df["region_level"]
+    fylker = sorted(df.loc[level == "Fylke", "region"].dropna().unique())
+    fylke = st.sidebar.selectbox("Fylke", ["Hele landet"] + fylker)
+    if fylke == "Hele landet":
+        return df[level == "Landet"], "Hele landet"
+
+    kommuner = sorted(df.loc[(level == "Kommune") & (df["fylke"] == fylke), "region"].dropna().unique())
+    kommune = st.sidebar.selectbox("Kommune", ["Hele fylket"] + kommuner)
+    if kommune == "Hele fylket":
+        return df[(level == "Fylke") & (df["region"] == fylke)], fylke
+    return df[(level == "Kommune") & (df["region"] == kommune)], kommune
+
+
 def national(df: pd.DataFrame) -> pd.DataFrame:
     """The Landet rows, for a headline figure beside the selection."""
     return df[df["region_level"] == "Landet"]
