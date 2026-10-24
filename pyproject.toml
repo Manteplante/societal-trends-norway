@@ -22,6 +22,7 @@ dependencies = [
 
 [tool.uv]
 package = false
+constraint-dependencies = ["certifi>=2026.10.19"]
 
 [tool.uv.sources]
 ssb-statistikkbanken = { git = "https://github.com/Manteplante/ssb_statistikkbanken", branch = "main" }
